@@ -5,6 +5,8 @@
 #include <conio.h> // to include getch
 #include <windows.h> // forçar tamanho da janela
 #include <locale.h> // necessário para usar setlocale
+#include "main.h"
+#include <string.h>
 
 char jogador[20]; //nome do jogador
 
@@ -14,6 +16,12 @@ char jogador[20]; //nome do jogador
 #define VELOCIDADE_FACIl 300 // menor, mais rápido
 #define VELOCIDADE_MEDIO 200
 #define VELOCIDADE_DIFICIL 100
+
+int cobraPosicaoX[COLUNAS] = {}; // Posição (linha) de inicio
+int cobraPosicaoY[LINHAS] = {}; // Posição (coluna) de inicio
+int comidaPosicaoX, comidaPosicaoY; // posições relativas aos pontos que irão surgir
+
+int tamanhoCobra = TAMANHO_COBRA; // tamanho da cobra
 
 // Key code
 enum {
@@ -25,7 +33,7 @@ enum {
     ARROW_RIGHT = 256 + 77
 };
 
-char menus[5][1000] = {
+char menus[4][1000] = {
 	"Jogar cobrinha",
 	"Ver pontuacoes",
 	"Como jogar?",
@@ -36,16 +44,6 @@ char niveis[3][10] = {
 	"medio",
 	"dificil"
 };
-
-static int get_code();
-void comoJogar();
-void jogarCobrinha(int nivel);
-void verPontuacoes();
-void generateMenu(int choice);
-int getRanking(int pontuacao);
-
-int gerarComida();
-int escolhaNivel();
 
 void generateMenu(int choice) {
 	system("cls");
@@ -89,6 +87,7 @@ void generateMenu(int choice) {
         			break;
         		case 3:
         			printf("saindo....");
+					system("cls");
         			exit(0);
         			break;
         	}
@@ -105,7 +104,7 @@ void irColunaLinha(int coluna, int linha) {
 
 void carregarJogo() {
 	system("cls");
-	printf("Nome do jogador?\n");
+	printf("Nome do jogador?\n> ");
 	scanf("%[^\n]s", &jogador);
 	system("cls");
 	printf("Aguarde o jogo ser carregado...\n");
@@ -121,7 +120,6 @@ void carregarJogo() {
 }
 
 void mostrarLimitesMatriz() {
-
 	system("cls");
 	int matriz[LINHAS][COLUNAS];
 
@@ -129,7 +127,7 @@ void mostrarLimitesMatriz() {
 
 		for (int j = 0; j < COLUNAS; ++j) {
 
-			if((j==0) || (i==0) || (i== LINHAS-1 ) || (j== COLUNAS - 1)){
+			if((j==0) || (i==0) || (i == LINHAS-1 ) || (j == COLUNAS - 1)){
 				printf("+");
 			} else {
 				printf(" ");
@@ -140,8 +138,7 @@ void mostrarLimitesMatriz() {
 }
 
 void mostrarGameOver(int pontos) {
-	// Salvar o recorde do joguinho
-	// Abrindo o arquivo
+	// Salvar a pontuação no arquivo
 	FILE *arquivo = fopen("ranking.txt", "a"); // append
 
 	if(arquivo!=NULL){
@@ -220,12 +217,39 @@ int escolhaNivel() {
 	return nivel;
 }
 
-void jogarCobrinha(int nivel) {
-	int cobraPosicaoX[COLUNAS] = {}; // Posição (linha) de inicio
-	int cobraPosicaoY[LINHAS] = {}; // Posição (coluna) de inicio
-	int comidaPosicaoX, comidaPosicaoY; // posições relativas aos pontos que irão surgir
+int bateuNaParede() {
+	if (
+		(cobraPosicaoY[0] == 0 )  		||
+        (cobraPosicaoY[0] == LINHAS-1 ) ||
+        (cobraPosicaoX[0] == 0 )  		||
+        (cobraPosicaoX[0] == (COLUNAS-1) )
+	) return 1;
+	else return 0;
+}
 
-	int i, tamanhoCobra = TAMANHO_COBRA; // tamanho da cobra
+void definirCorComida(int comida) {
+	switch (comida) {
+	case 1:
+		printf("\033[0;32m"); // Cor setada para verde
+		break;
+	case 2:
+		printf("\033[0;31m"); // Cor setada para vermelho
+		break;
+	case 3:
+		printf("\033[0;33m"); // Cor setada para amarelo
+		break;
+	}
+}
+
+int comeuComida() {
+	if (
+		comidaPosicaoX == cobraPosicaoX[0] &&
+		comidaPosicaoY == cobraPosicaoY[0]
+	) return 1;
+	else return 0;
+}
+
+void jogarCobrinha(int nivel) {
 	int pontos = 0; // pontuação do jogador
 	int ch; // código do charset (utilizado para definir a tecla pressionada)
 	
@@ -250,69 +274,38 @@ void jogarCobrinha(int nivel) {
     comidaPosicaoX=(rand() % (COLUNAS-2) )+1;
 	comidaPosicaoY=(rand() % (LINHAS-2) )+1;
 
-
-	char corComida;
-	switch (comida) {
-	case 1:
-		corComida = '1';
-		printf("\033[0;32m"); // Cor setada para verde
-		break;
-	case 2:
-		corComida = '2';
-		printf("\033[0;31m"); // Cor setada para vermelho
-		break;
-	case 3:
-		corComida = '3';
-		printf("\033[0;33m"); // Cor setada para amarelo
-		break;
-	}
-
+	definirCorComida(comida);
 	irColunaLinha(comidaPosicaoX, comidaPosicaoY);
-	printf("%c", corComida);
+	printf("%c", 'P');
 	printf("\033[0m"); // cor setada para padrão
 
-
-    // Mostrar informações
     irColunaLinha(0,LINHAS);
     printf("Precisone alguma tecla para iniciar...");
 
-    // Gerar a posição da cobra de forma aleatorica
-    cobraPosicaoX[0] = (rand()% (COLUNAS-2) )+1;
-    cobraPosicaoY[0] = (rand()% (LINHAS-2) )+1;
+    // Gerar a posição inicial cobra de forma aleatora
+    cobraPosicaoX[0] = (rand()% (COLUNAS-1) );
+    cobraPosicaoY[0] = (rand()% (LINHAS-1) );
 
     irColunaLinha(cobraPosicaoX[0], cobraPosicaoY[0]);
     printf("%c",'*'); 
 
     ch = get_code(); // Aguardar uma tecla para iniciar
 
- 	while (ch != KEY_ESC ) {
- 		
- 		// Limpar instruções
- 		for (int i = 0; i < 37; ++i) {
-
- 			irColunaLinha(i, LINHAS);
- 			printf(" ");
- 		}
-
-        // Verificar se a cobrinha bateu na parede
-        if(
-        	(cobraPosicaoY[0] == 0 )  		||
-        	(cobraPosicaoY[0] == LINHAS ) 	||
-        	(cobraPosicaoX[0] == 0 )  		||
-        	(cobraPosicaoX[0] == (COLUNAS-1) )
-		)
-        {
-        	mostrarGameOver(pontos);
-        }
+	// Limpar instruções
+	for (int i = 0; i < COLUNAS-2; ++i) {
+		irColunaLinha(i, LINHAS);
+		printf(" ");
+	}
+ 	while (!bateuNaParede()) {
 
  		// Acompanhar os movimentos da compra
-		for(i = tamanhoCobra; i > 0; i--) {
-        	cobraPosicaoX[i]=cobraPosicaoX[i-1];
-            cobraPosicaoY[i]=cobraPosicaoY[i-1];
+		for(int i = tamanhoCobra; i > 0; i--) {
+        	cobraPosicaoX[i] = cobraPosicaoX[i-1];
+            cobraPosicaoY[i] = cobraPosicaoY[i-1];
         }
 
        	// Apagar rastro
-        irColunaLinha(cobraPosicaoX[tamanhoCobra],cobraPosicaoY[tamanhoCobra]);
+        irColunaLinha(cobraPosicaoX[tamanhoCobra], cobraPosicaoY[tamanhoCobra]);
         printf(" ");
 
 		// pegar a tecla para mudar a direção da cobra
@@ -321,28 +314,27 @@ void jogarCobrinha(int nivel) {
         }
 
         // Verificamos o código da tecla que foi pressionada para fazer a ação correta
+		char sentido;
         switch (ch) {
 	        case ARROW_UP:
+				sentido = '^';
 	        	cobraPosicaoY[0]--;
 	            break;
 	        case ARROW_DOWN:
+				sentido = 'v';
 	        	cobraPosicaoY[0]++;
 	            break;
 	        case ARROW_LEFT:
+				sentido = '<';
 	        	cobraPosicaoX[0]--;
 	            break;
 	        case ARROW_RIGHT:
+				sentido = '>';
 	        	cobraPosicaoX[0]++;
 	            break;
-            default:
-            	ch = get_code();
-            	break;
         }
 
-        // Verificar se a cobrinha comeu alguma comida
-        if(	comidaPosicaoX == cobraPosicaoX[0] &&
-			comidaPosicaoY == cobraPosicaoY[0] )
-			{
+        if(	comeuComida() )	{
 			
 			PlaySound("som.wav", NULL, SND_FILENAME || SND_ASYNC);
 			if (comida == 1 || comida == 3) {
@@ -351,54 +343,33 @@ void jogarCobrinha(int nivel) {
             pontos = pontos + comida;
             
 			// Gerar a próxima comida
-            comidaPosicaoX=(rand() % (COLUNAS-2) )+1;
-            comidaPosicaoY=(rand() % (LINHAS-2) )+1;
+            comidaPosicaoX=(rand() % (COLUNAS-1));
+            comidaPosicaoY=(rand() % (LINHAS-1));
 			comida = gerarComida();
-
 			
-			// Indo para a posição para imprimir o proximo ponto
 			irColunaLinha(comidaPosicaoX, comidaPosicaoY);
-			char corComida;
-			switch (comida) {
-			case 1:
-				corComida = '1';
-				printf("\033[0;32m"); // Cor setada para verde
-				break;
-			case 2:
-				corComida = '2';
-				printf("\033[0;31m"); // Cor setada para vermelho
-				break;
-			case 3:
-				corComida = '3';
-				printf("\033[0;33m"); // Cor setada para amarelo
-				break;
-			}
-
-			printf("%c", corComida);
+			definirCorComida(comida);
+			printf("%c", 'P');
 			printf("\033[0m"); // cor setada para padrão
         }
 
-        // Indo para a posição para imprimir a cobrinha
-        irColunaLinha(cobraPosicaoX[0],cobraPosicaoY[0]);
-		printf("%c", '*');
+        // Imprimindo a cobrinha
+        irColunaLinha(cobraPosicaoX[0], cobraPosicaoY[0]);
+		printf("%c", sentido);
 
-        // Atualizar o placar
-	    irColunaLinha(0,LINHAS);
+        // Atualizando o placar
+	    irColunaLinha(0, LINHAS);
 	    printf("Pontos: %d - %s", pontos, jogador);
 
 		Sleep(velocidade);
-        
-		// Verificar se a cobra bateu nela mesma
-        for(i=1; i < tamanhoCobra; i++) {
+
+		for(int i=1; i<tamanhoCobra; i++) {
             if(cobraPosicaoX[0]==cobraPosicaoX[i]&&cobraPosicaoY[0]==cobraPosicaoY[i]){
 				mostrarGameOver(pontos);
             }
         }
     }
-
-	getch();
-	system("cls");
-	generateMenu(0);
+	mostrarGameOver(pontos);
 }
 
 void verPontuacoes(){
@@ -411,7 +382,6 @@ void verPontuacoes(){
 		while(fgets(texto_str, 20, arquivo) != NULL){
 			printf("%s", texto_str);
 		}
-		
 		fclose(arquivo);
 
 	} else {

@@ -42,6 +42,7 @@ void comoJogar();
 void jogarCobrinha(int nivel);
 void verPontuacoes();
 void generateMenu(int choice);
+int getRanking(int pontuacao);
 
 int gerarComida();
 int escolhaNivel();
@@ -159,7 +160,7 @@ void mostrarGameOver(int pontos) {
 	irColunaLinha(10,6);
 	printf("Pontuacao: %d", pontos);
 	irColunaLinha(10,7);
-	printf("posicao no ranking: ");
+	printf("posicao no ranking: %d", getRanking(pontos));
 	irColunaLinha(4,8);
 	printf("==============================");
 
@@ -451,6 +452,34 @@ static int get_code() {
     if (ch == 0 || ch == 224)
         ch = 256 + getch();
     return ch;
+}
+
+int getRanking(int pontuacao) {
+	FILE *f = fopen("ranking.txt", "r");
+	char texto[20];
+	int quantP = 0;
+	int pontuacoesMaiores = 0;
+
+	if (f != NULL) {
+		while (fgets(texto, 20, f) != NULL) {
+			quantP++;
+		}
+
+		fseek(f, 0, SEEK_SET);
+		int pontAtual;
+
+		for (int i = 0; i < quantP; i++) {
+			fscanf(f, "%d", &pontAtual);
+
+			if (pontAtual > pontuacao) {
+				pontuacoesMaiores++;
+			}
+			fgets(texto, 20, f);
+		}
+	}
+	int posicao = pontuacoesMaiores + 1;
+	fclose(f);
+	return posicao;
 }
 
 int main(int argc, char const *argv[]) {

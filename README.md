@@ -9,8 +9,8 @@ Baseado [neste](https://github.com/hjJunior/jogo-da-cobra-c) jogo da cobrinha.<b
 Para compilar, baixe o repositório, abra um terminal na pasta baixada e execute:
 
 ```
-gcc ./jogo.c -o jogo.exe -lwinmm
-./jogo.c
+gcc ./main.c -o main.exe -lwinmm
+./main.exe
 ```
 O `-lwinmm` serve para adicionar uma biblioteca específica, para tocar áudio<br>
 (requisito da atividade da disciplina)

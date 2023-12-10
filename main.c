@@ -283,8 +283,8 @@ void jogarCobrinha(int nivel) {
     printf("Precisone alguma tecla para iniciar...");
 
     // Gerar a posição inicial cobra de forma aleatora
-    cobraPosicaoX[0] = (rand()% (COLUNAS-1) );
-    cobraPosicaoY[0] = (rand()% (LINHAS-1) );
+    cobraPosicaoX[0] = (rand() % (COLUNAS-1));
+    cobraPosicaoY[0] = (rand() % (LINHAS-1));
 
     irColunaLinha(cobraPosicaoX[0], cobraPosicaoY[0]);
     printf("%c",'*'); 
@@ -364,7 +364,8 @@ void jogarCobrinha(int nivel) {
 		Sleep(velocidade);
 
 		for(int i=1; i<tamanhoCobra; i++) {
-            if(cobraPosicaoX[0]==cobraPosicaoX[i]&&cobraPosicaoY[0]==cobraPosicaoY[i]){
+            if(	cobraPosicaoX[0]==cobraPosicaoX[i] &&
+				cobraPosicaoY[0] == cobraPosicaoY[i]) {
 				mostrarGameOver(pontos);
             }
         }

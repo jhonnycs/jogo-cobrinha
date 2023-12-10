@@ -160,7 +160,8 @@ void mostrarGameOver(int pontos) {
 	irColunaLinha(10,6);
 	printf("Pontuacao: %d", pontos);
 	irColunaLinha(10,7);
-	printf("posicao no ranking: %d", getRanking(pontos));
+	int posicao = getRanking(pontos);
+	printf("posicao no ranking: %d%s", posicao, posicao == 0 ? "erro no arquivo" : "");
 	irColunaLinha(4,8);
 	printf("==============================");
 
@@ -314,8 +315,7 @@ void jogarCobrinha(int nivel) {
         irColunaLinha(cobraPosicaoX[tamanhoCobra],cobraPosicaoY[tamanhoCobra]);
         printf(" ");
 
-		// pegar a tecla para mudar a direçãod da cobra
-		int chAnterior = ch;
+		// pegar a tecla para mudar a direção da cobra
         if(kbhit()) {
         	ch = get_code();
         }
@@ -323,31 +323,15 @@ void jogarCobrinha(int nivel) {
         // Verificamos o código da tecla que foi pressionada para fazer a ação correta
         switch (ch) {
 	        case ARROW_UP:
-				if (chAnterior == ARROW_DOWN) {
-					ch = ARROW_DOWN;
-					break;
-				}
 	        	cobraPosicaoY[0]--;
 	            break;
 	        case ARROW_DOWN:
-				if (chAnterior == ARROW_UP) {
-					ch = ARROW_UP;
-					break;
-				}
 	        	cobraPosicaoY[0]++;
 	            break;
 	        case ARROW_LEFT:
-				if (chAnterior == ARROW_RIGHT) {
-					ch = ARROW_RIGHT;
-					break;
-				}
 	        	cobraPosicaoX[0]--;
 	            break;
 	        case ARROW_RIGHT:
-				if (chAnterior == ARROW_LEFT) {
-					ch = ARROW_LEFT;
-					break;
-				}
 	        	cobraPosicaoX[0]++;
 	            break;
             default:
@@ -476,10 +460,12 @@ int getRanking(int pontuacao) {
 			}
 			fgets(texto, 20, f);
 		}
+		int posicao = pontuacoesMaiores + 1;
+		fclose(f);
+		return posicao;
+	} else {
+		return 0;
 	}
-	int posicao = pontuacoesMaiores + 1;
-	fclose(f);
-	return posicao;
 }
 
 int main(int argc, char const *argv[]) {

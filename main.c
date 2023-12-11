@@ -8,7 +8,8 @@
 #include "main.h"
 #include <string.h>
 
-char jogador[20]; //nome do jogador
+#define TAMANHO_NOME_JOGADOR 20
+char jogador[TAMANHO_NOME_JOGADOR]; //nome do jogador
 
 #define LINHAS 26
 #define COLUNAS 80
@@ -59,7 +60,7 @@ void generateMenu(int choice) {
 
     SMALL_RECT windowSize = {0 , 0, COLUNAS, LINHAS};
     SetConsoleWindowInfo(GetStdHandle(STD_OUTPUT_HANDLE), TRUE, &windowSize);
-
+	int nivel;
     int ch;
     while (( ch = get_code()) != KEY_ESC ) {
         switch (ch) {
@@ -76,7 +77,7 @@ void generateMenu(int choice) {
         case KEY_ENTER:
         	switch(choice){
         		case 0:
-					int nivel = escolhaNivel();
+					nivel = escolhaNivel();
         			jogarCobrinha(nivel);
         			break;
         		case 1:
@@ -103,21 +104,30 @@ void irColunaLinha(int coluna, int linha) {
 }
 
 void carregarJogo() {
-	system("cls");
-	printf("Nome do jogador?\n> ");
-	scanf("%[^\n]s", &jogador);
-	system("cls");
-	printf("Aguarde o jogo ser carregado...\n");
-	char load[11] = "carregando";
-	for (int i = 0; i < 11; ++i) {
-		printf("%c ",load[i]);
-		Sleep(80);
+	while (1) {
+		system("cls");
+      	printf("Nome do jogador?\n> ");
+      	fgets(jogador, sizeof(jogador), stdin);
+      	jogador[strcspn(jogador, "\n")] = 0;
+      	if (jogador[0] != '\0') {
+          	break;
+      	}
+      	printf("Nome do jogador n�o pode ser vazio.\n");
+      	sleep(1);
 	}
-	printf("...\nCarregamento concluido\n");
+  	system("cls");
+  	printf("Aguarde o jogo ser carregado...\n");
+  	char load[11] = "carregando";
+  	for (int i = 0; i < 11; ++i) {
+      	printf("%c ",load[i]);
+      	Sleep(80);
+  	}
+  	printf("...\nCarregamento concluido\n");
 	sleep(1);
-	printf("Iniciando...");
-	system("cls");
+  	printf("Iniciando...");
+  	system("cls");
 }
+
 
 void mostrarLimitesMatriz() {
 	system("cls");
@@ -172,9 +182,9 @@ void mostrarGameOver(int pontos) {
 // vermelho	+2 pontos
 int gerarComida() {
 	int pontoAleatorio = rand() % 100;
-	if (pontoAleatorio < 49) {
+	if (pontoAleatorio < 50) {
 		return 1;
-	} else if (pontoAleatorio < 79) {
+	} else if (pontoAleatorio < 80) {
 		return 3;
 	} else {
 		return 2;
@@ -253,6 +263,8 @@ void jogarCobrinha(int nivel) {
 	int pontos = 0; // pontuação do jogador
 	int ch; // código do charset (utilizado para definir a tecla pressionada)
 	
+	
+	
 	int velocidade;
 	switch (nivel) {
 	case 1:
@@ -283,8 +295,8 @@ void jogarCobrinha(int nivel) {
     printf("Precisone alguma tecla para iniciar...");
 
     // Gerar a posição inicial cobra de forma aleatora
-    cobraPosicaoX[0] = (rand() % (COLUNAS-1));
-    cobraPosicaoY[0] = (rand() % (LINHAS-1));
+    cobraPosicaoX[0] = (rand() % (COLUNAS-2))+1;
+    cobraPosicaoY[0] = (rand() % (LINHAS-2))+1;
 
     irColunaLinha(cobraPosicaoX[0], cobraPosicaoY[0]);
     printf("%c",'*'); 
@@ -315,24 +327,25 @@ void jogarCobrinha(int nivel) {
 
         // Verificamos o código da tecla que foi pressionada para fazer a ação correta
 		char sentido;
-        switch (ch) {
-	        case ARROW_UP:
+
+		switch (ch) {
+			case ARROW_UP:
 				sentido = '^';
-	        	cobraPosicaoY[0]--;
-	            break;
-	        case ARROW_DOWN:
+				cobraPosicaoY[0]--;
+				break;
+			case ARROW_DOWN:
 				sentido = 'v';
-	        	cobraPosicaoY[0]++;
-	            break;
-	        case ARROW_LEFT:
+				cobraPosicaoY[0]++;
+				break;
+			case ARROW_LEFT:
 				sentido = '<';
-	        	cobraPosicaoX[0]--;
-	            break;
-	        case ARROW_RIGHT:
+				cobraPosicaoX[0]--;
+				break;
+			case ARROW_RIGHT:
 				sentido = '>';
-	        	cobraPosicaoX[0]++;
-	            break;
-        }
+				cobraPosicaoX[0]++;
+				break;
+		}
 
         if(	comeuComida() )	{
 			
@@ -380,7 +393,7 @@ void verPontuacoes(){
 
 	if (arquivo != NULL) {
 		printf("Listando:\n");
-		while(fgets(texto_str, 20, arquivo) != NULL){
+		while(fgets(texto_str, TAMANHO_NOME_JOGADOR, arquivo) != NULL){
 			printf("%s", texto_str);
 		}
 		fclose(arquivo);
@@ -411,7 +424,7 @@ static int get_code() {
 
 int getRanking(int pontuacao) {
 	FILE *f = fopen("ranking.txt", "r");
-	char texto[20];
+	char texto[TAMANHO_NOME_JOGADOR];
 	int quantP = 0;
 	int pontuacoesMaiores = 0;
 
@@ -442,7 +455,7 @@ int getRanking(int pontuacao) {
 int main(int argc, char const *argv[]) {
 	time_t t;
 	srand((unsigned) time(&t));	
-	setlocale(LC_ALL,"");
+	setlocale(LC_ALL,"Portuguese_Brazil");
 	generateMenu(0);
 	return 0;
 }

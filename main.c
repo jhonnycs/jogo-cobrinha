@@ -112,7 +112,7 @@ void carregarJogo() {
       	if (jogador[0] != '\0') {
           	break;
       	}
-      	printf("Nome do jogador n�o pode ser vazio.\n");
+      	printf("Nome do jogador não pode ser vazio.\n");
       	sleep(1);
 	}
   	system("cls");
@@ -185,9 +185,9 @@ int gerarComida() {
 	if (pontoAleatorio < 50) {
 		return 1;
 	} else if (pontoAleatorio < 80) {
-		return 3;
-	} else {
 		return 2;
+	} else {
+		return 3;
 	}
 }
 
@@ -388,7 +388,7 @@ void jogarCobrinha(int nivel) {
 
 void verPontuacoes(){
 	system("cls");
-	char texto_str[20];
+	char texto_str[TAMANHO_NOME_JOGADOR];
 	FILE *arquivo = fopen("ranking.txt", "r");
 
 	if (arquivo != NULL) {
